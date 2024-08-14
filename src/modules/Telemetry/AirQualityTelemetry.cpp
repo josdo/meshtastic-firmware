@@ -33,8 +33,12 @@ int32_t AirQualityTelemetryModule::runOnce()
 
         if (moduleConfig.telemetry.air_quality_enabled) {
             LOG_INFO("Air quality Telemetry: Initializing\n");
-            if (!aqi.begin_I2C()) {
-                LOG_WARN("Could not establish i2c connection to AQI sensor\n");
+
+            // For Heltec V3, use the `Wire1` I2C bus with pins 41, 42 since the `Wire` I2C bus is at 
+            // 700 KHz for the display, and the AQI PM2.5 sensor only runs at 100 KHz.
+            if (!aqi.begin_I2C(&Wire1)) { 
+                LOG_WARN("Could not establish i2c connection to AQI sensor \
+                          on the second bus (for heltec v3: sda=41, scl=42)\n");
                 return disable();
             }
             return 1000;
