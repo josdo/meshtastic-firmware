@@ -38,9 +38,10 @@ meshtastic_MeshPacket *RoutingModule::allocReply()
 }
 
 void RoutingModule::sendAckNak(meshtastic_Routing_Error err, NodeNum to, PacketId idFrom, ChannelIndex chIndex, uint8_t hopStart,
-                               uint8_t hopLimit)
+                               uint8_t hopLimit, bool _wantAck)
 {
     auto p = allocAckNak(err, to, idFrom, chIndex, hopStart, hopLimit);
+    p->want_ack = _wantAck;
 
     router->sendLocal(p); // we sometimes send directly to the local node
 }
