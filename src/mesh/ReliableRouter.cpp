@@ -110,11 +110,17 @@ void ReliableRouter::sniffReceived(const meshtastic_MeshPacket *p, const meshtas
                 LOG_DEBUG("Some other module has replied to this message, no need for a 2nd ack\n");
             } else if (p->which_payload_variant == meshtastic_MeshPacket_decoded_tag && c &&
                        c->error_reason == meshtastic_Routing_Error_NO_CHANNEL) {
-                if (owner.public_key.size == 32)
-                    // This seems like a PKI decrypt failure, so send a NodeInfo
+                if (owner.public_key.size == 32) {
+                    LOG_INFO("This seems like a remote PKI decrypt failure, so send a NodeInfo");
                     nodeInfoModule->sendOurNodeInfo(p->from, false, p->channel, true);
+                }
             } else if (p->which_payload_variant == meshtastic_MeshPacket_decoded_tag) {
                 sendAckNak(meshtastic_Routing_Error_NONE, getFrom(p), p->id, p->channel, p->hop_start, p->hop_limit);
+            } else if (p->which_payload_variant == meshtastic_MeshPacket_encrypted_tag && p->channel == 0 &&
+                       (nodeDB->getMeshNode(p->from) != nullptr || nodeDB->getMeshNode(p->from)->user.public_key.size == 0)) {
+                // This looks like it might be a PKI packet from an unknown node, so send NO_CHANNEL with want_ack set true
+                sendAckNak(meshtastic_Routing_Error_NO_CHANNEL, getFrom(p), p->id, channels.getPrimaryIndex(), p->hop_start,
+                           p->hop_limit, true);
             } else {
                 // Send a 'NO_CHANNEL' error on the primary channel if want_ack packet destined for us cannot be decoded
                 sendAckNak(meshtastic_Routing_Error_NO_CHANNEL, getFrom(p), p->id, channels.getPrimaryIndex(), p->hop_start,
