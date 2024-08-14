@@ -616,8 +616,13 @@ void Router::perhapsHandleReceived(meshtastic_MeshPacket *p)
 
     // Note: we avoid calling shouldFilterReceived if we are supposed to ignore certain nodes - because some overrides might
     // cache/learn of the existence of nodes (i.e. FloodRouter) that they should not
-    if (!ignore)
+    if (!ignore) {
         handleReceived(p);
+    } else if (p->which_payload_variant == meshtastic_MeshPacket_encrypted_tag && p->channel == 0 &&
+               nodeDB->getMeshNode(p->from) != nullptr &&
+               nodeDB->getMeshNode(p->from)->user.public_key.size > 0) { // hack TODO fix
+        handleReceived(p);
+    }
 
     packetPool.release(p);
 }

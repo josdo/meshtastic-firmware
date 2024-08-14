@@ -139,6 +139,8 @@ void ReliableRouter::sniffReceived(const meshtastic_MeshPacket *p, const meshtas
             if (ackId) {
                 LOG_DEBUG("Received an ack for 0x%x, stopping retransmissions\n", ackId);
                 stopRetransmission(p->to, ackId);
+            } else if (c->error_reason == meshtastic_Routing_Error_NO_CHANNEL && p->want_ack) {
+                LOG_DEBUG("Received a nak for 0x%x, but retrying because PKI\n", nakId);
             } else {
                 LOG_DEBUG("Received a nak for 0x%x, stopping retransmissions\n", nakId);
                 stopRetransmission(p->to, nakId);
