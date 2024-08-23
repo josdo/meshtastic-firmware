@@ -12,7 +12,7 @@ def readProps(prefsLoc):
     config = configparser.RawConfigParser()
     config.read(prefsLoc)
     version = dict(config.items('VERSION'))
-    verObj = dict(short = "{}.{}.{}".format(version["major"], version["minor"], version["build"]),
+    verObj = dict(short = "smesh amethyst {}.{}.{}".format(version["major"], version["minor"], version["build"]),
         long = "unset")
 
     # Try to find current build SHA if if the workspace is clean.  This could fail if git is not installed
